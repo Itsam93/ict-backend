@@ -41,6 +41,5 @@ const purchaseSchema = new mongoose.Schema(
 );
 
 purchaseSchema.index({ email: 1 });
-purchaseSchema.index({ reference: 1 });
 
 export default mongoose.model("Purchase", purchaseSchema);

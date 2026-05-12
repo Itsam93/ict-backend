@@ -6,7 +6,7 @@ const transactionSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      default: null, // fallback for older records
+      default: null,
     },
 
     email: {
@@ -48,11 +48,10 @@ const transactionSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      index: true,
     },
 
     providerReference: {
-      type: String, // Paystack reference (returned after verification)
+      type: String,
       default: null,
     },
 
@@ -99,10 +98,8 @@ const transactionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-/* ================= INDEXES (IMPORTANT FOR PERFORMANCE) ================= */
-transactionSchema.index({ email: 1 });
+/* ================= INDEXES ================= */
 transactionSchema.index({ userId: 1 });
-transactionSchema.index({ status: 1 });
 transactionSchema.index({ productType: 1, productId: 1 });
 transactionSchema.index({ createdAt: -1 });
 
