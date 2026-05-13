@@ -4,15 +4,14 @@ import {
   deletePayment,
 } from "../controllers/paymentController.js";
 
-import { protectAdmin } from "../middleware/authMiddleware.js";
-import { adminOnly } from "../middleware/adminMiddleware.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 /* ADMIN */
-router.get("/", protectAdmin, adminOnly, getPayments);
+router.get("/", protect, adminOnly, getPayments);
 
-router.delete("/:id", protectAdmin, adminOnly, deletePayment);
+router.delete("/:id", protect, adminOnly, deletePayment);
 
 
 export default router; 

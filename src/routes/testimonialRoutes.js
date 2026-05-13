@@ -6,8 +6,7 @@ import {
   deleteTestimonial,
 } from "../controllers/testimonialController.js";
 
-import { protectAdmin } from "../middleware/authMiddleware.js";
-import { adminOnly } from "../middleware/adminMiddleware.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -15,8 +14,8 @@ const router = express.Router();
 router.get("/", getTestimonials);
 
 /* ADMIN ONLY */
-router.post("/", protectAdmin, adminOnly, createTestimonial);
-router.put("/:id", protectAdmin, adminOnly, updateTestimonial);
-router.delete("/:id", protectAdmin, adminOnly, deleteTestimonial);
+router.post("/", protect, adminOnly, createTestimonial);
+router.put("/:id", protect, adminOnly, updateTestimonial);
+router.delete("/:id", protect, adminOnly, deleteTestimonial);
 
 export default router;

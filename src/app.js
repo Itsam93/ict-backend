@@ -19,7 +19,7 @@ import authUserRoutes from "./routes/authUserRoutes.js";
 import resourceAnalyticsRoutes from "./routes/resourceAnalyticsRoutes.js";
 import paystackRoutes from "./routes/paystackRoutes.js";
 import entitlementRoutes from "./routes/entitlementRoutes.js";
-
+import adminUserRoutes from "./routes/adminUserRoutes.js";
 
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 import { limiter } from "./middleware/rateLimit.js";
@@ -116,6 +116,8 @@ app.use("/api/enrollments", enrollmentRoutes);
 
 app.use("/api/cms/hero", heroRoutes);
 app.use("/api/cms/cta", ctaRoutes);
+
+app.use("/api/admin/users", adminUserRoutes);
 
 app.use("/api/transactions", transactionRoutes);
 

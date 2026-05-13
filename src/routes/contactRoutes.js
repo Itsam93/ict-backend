@@ -7,8 +7,7 @@ import {
   replyToMessage,
 } from "../controllers/contactController.js";
 
-import { protectAdmin } from "../middleware/authMiddleware.js";
-import { adminOnly } from "../middleware/adminMiddleware.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -20,12 +19,12 @@ router.post("/", sendMessage);
 /* =========================
    ADMIN ROUTES
 ========================= */
-router.get("/", protectAdmin, adminOnly, getMessages);
+router.get("/", protect, adminOnly, getMessages);
 
-router.put("/:id/read", protectAdmin, adminOnly, markAsRead);
+router.put("/:id/read", protect, adminOnly, markAsRead);
 
-router.delete("/:id", protectAdmin, adminOnly, deleteMessage);
+router.delete("/:id", protect, adminOnly, deleteMessage);
 
-router.post("/reply", protectAdmin, adminOnly, replyToMessage);
+router.post("/reply", protect, adminOnly, replyToMessage);
 
 export default router;

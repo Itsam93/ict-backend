@@ -9,9 +9,7 @@ import {
   getMyCourses,
 } from "../controllers/courseController.js";
 
-import { protectAdmin, protectUser } from "../middleware/authMiddleware.js";
-
-import { adminOnly } from "../middleware/adminMiddleware.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -19,16 +17,16 @@ const router = express.Router();
 router.get("/", getCourses);
 
 /* ================= USER ================= */
-router.get("/my-courses", protectUser, getMyCourses);
+router.get("/my-courses", protect, getMyCourses);
 
 /* ================= SINGLE COURSE ================= */
 router.get("/:id", getCourseById);
 
 /* ================= ADMIN ================= */
-router.post("/", protectAdmin, adminOnly, createCourse);
+router.post("/", protect, adminOnly, createCourse);
 
-router.put("/:id", protectAdmin, adminOnly, updateCourse);
+router.put("/:id", protect, adminOnly, updateCourse);
 
-router.delete("/:id", protectAdmin, adminOnly, deleteCourse);
+router.delete("/:id", protect, adminOnly, deleteCourse);
 
 export default router;

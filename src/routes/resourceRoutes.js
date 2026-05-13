@@ -14,11 +14,8 @@ import {
 } from "../controllers/resourcePaymentController.js";
 
 import {
-  protectAdmin,
-  protectUser,
+  protect, adminOnly
 } from "../middleware/authMiddleware.js";
-
-import { adminOnly } from "../middleware/adminMiddleware.js";
 
 const router = express.Router();
 
@@ -37,7 +34,7 @@ router.get("/", getResources);
  */
 router.post(
   "/pay/:id",
-  protectUser,
+  protect,
   initializeResourcePayment
 );
 
@@ -55,7 +52,7 @@ router.get(
  */
 router.get(
   "/view/:id",
-  protectUser,
+  protect,
   viewResource
 );
 
@@ -70,7 +67,7 @@ router.get(
  */
 router.post(
   "/",
-  protectAdmin,
+  protect,
   adminOnly,
   createResource
 );
@@ -80,7 +77,7 @@ router.post(
  */
 router.put(
   "/:id",
-  protectAdmin,
+  protect,
   adminOnly,
   updateResource
 );
@@ -91,7 +88,7 @@ router.put(
  */
 router.delete(
   "/:id",
-  protectAdmin,
+  protect,
   adminOnly,
   deleteResource
 );

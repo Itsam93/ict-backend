@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
@@ -19,7 +20,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
-      select: false, 
+      select: false,
     },
 
     role: {
@@ -39,7 +40,7 @@ const userSchema = new mongoose.Schema(
       default: true,
     },
 
-    /* ================= VERIFICATION FLOW ================= */
+    /* ================= VERIFICATION ================= */
     emailVerificationToken: {
       type: String,
       default: null,
@@ -52,7 +53,7 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
-    /* ================= SECURITY ================= */
+    /* ================= PASSWORD RESET ================= */
     passwordResetToken: {
       type: String,
       default: null,
@@ -65,7 +66,7 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
-    /* ================= OPTIONAL UX ================= */
+    /* ================= META ================= */
     lastLoginAt: {
       type: Date,
       default: null,
@@ -76,4 +77,23 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("User", userSchema);
+/* =====================================================
+   PASSWORD HASHING (FIXED - NO next() BUG)
+===================================================== */
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
+
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+
+/* =====================================================
+   PASSWORD MATCH METHOD
+===================================================== */
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+const User = mongoose.model("User", userSchema);
+
+export default User;

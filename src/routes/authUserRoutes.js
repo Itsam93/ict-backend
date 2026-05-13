@@ -8,7 +8,7 @@ import {
   getUserProfile,
 } from "../controllers/authUserController.js";
 
-import { protectUser } from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -27,12 +27,12 @@ router.post("/resend-verification", resendVerificationEmail);
 // Login (STRICT: only verified users allowed)
 router.post("/login", loginUser);
 
-router.put("/change-password", protectUser, changePassword);
+router.put("/change-password", protect, changePassword);
 
 
 /* =========================
    PROTECTED ROUTES
 ========================= */
-router.get("/profile", protectUser, getUserProfile);
+router.get("/profile", protect, getUserProfile);
 
 export default router;

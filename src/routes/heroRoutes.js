@@ -7,8 +7,7 @@ import {
   deleteHeroContent,
 } from "../controllers/heroController.js";
 
-import { protectAdmin } from "../middleware/authMiddleware.js";
-import { adminOnly } from "../middleware/adminMiddleware.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -23,12 +22,12 @@ router.get("/:id", getSingleHeroContent);
 /* ================= ADMIN ================= */
 
 /* Create new hero */
-router.post("/", protectAdmin, adminOnly, createHeroContent);
+router.post("/", protect, adminOnly, createHeroContent);
 
 /* Update hero */
-router.put("/:id", protectAdmin, adminOnly, updateHeroContent);
+router.put("/:id", protect, adminOnly, updateHeroContent);
 
 /* Delete hero */
-router.delete("/:id", protectAdmin, adminOnly, deleteHeroContent);
+router.delete("/:id", protect, adminOnly, deleteHeroContent);
 
 export default router;

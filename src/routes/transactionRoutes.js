@@ -8,11 +8,8 @@ import {
   getUserTransactions, 
 } from "../controllers/transactionController.js";
 
-import { protectAdmin } from "../middleware/authMiddleware.js";
-import { adminOnly } from "../middleware/adminMiddleware.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
-
-import { protectUser } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -21,7 +18,7 @@ const router = express.Router();
 ========================= */
 
 // Initialize payment 
-router.post("/init", protectUser, initializeTransaction);
+router.post("/init", protect, initializeTransaction);
 
 // Verify payment (Paystack callback check)
 router.get("/verify/:reference", verifyTransaction);
@@ -33,7 +30,7 @@ router.get("/verify/:reference", verifyTransaction);
 
 router.get(
   "/my",
-  protectUser,
+  protect,
   getUserTransactions
 );
 
@@ -43,7 +40,7 @@ router.get(
 ========================= */
 router.get(
   "/",
-  protectAdmin,
+  protect,
   adminOnly,
   getTransactions
 );
@@ -51,7 +48,7 @@ router.get(
 
 router.delete(
   "/:id",
-  protectAdmin,
+  protect,
   adminOnly,
   deleteTransaction
 );

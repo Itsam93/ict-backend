@@ -5,7 +5,7 @@ import {
   deletePurchase,
 } from "../controllers/purchaseController.js";
 
-import { protectAdmin, adminOnly } from "../middleware/adminMiddleware.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -13,7 +13,7 @@ const router = express.Router();
 router.post("/my", getMyPurchases); 
 
 /* ================= ADMIN ================= */
-router.get("/", protectAdmin, adminOnly, getAllPurchases);
-router.delete("/:id", protectAdmin, adminOnly, deletePurchase);
+router.get("/", protect, adminOnly, getAllPurchases);
+router.delete("/:id", protect, adminOnly, deletePurchase);
 
 export default router;

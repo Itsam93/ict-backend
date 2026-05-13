@@ -1,7 +1,6 @@
 import express from "express";
 import { upload } from "../middleware/uploadMiddleware.js";
-import { protectAdmin } from "../middleware/authMiddleware.js";
-import { adminOnly } from "../middleware/adminMiddleware.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 /**
  * OPTIONAL: if you have a dedicated upload controller
@@ -25,7 +24,7 @@ const router = express.Router();
  */
 router.post(
   "/resources",
-  protectAdmin,
+  protect,
   adminOnly,
   upload.single("file"),
   uploadResourceFile
@@ -33,7 +32,7 @@ router.post(
 
 router.delete(
   "/resources/:publicId",
-  protectAdmin,
+  protect,
   adminOnly,
   deleteUploadedFile
 );

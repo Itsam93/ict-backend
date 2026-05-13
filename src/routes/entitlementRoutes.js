@@ -4,19 +4,19 @@ import {
   checkEntitlement,
 } from "../controllers/entitlementController.js";
 
-import { protectUser } from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 /* =========================================================
    USER ENTITLEMENTS (LOGGED-IN USER ONLY)
 ========================================================= */
-router.get("/my", protectUser, getMyEntitlements);
+router.get("/my", protect, getMyEntitlements);
 
 /* =========================================================
    CHECK SINGLE RESOURCE ACCESS
    GET /api/entitlements/check/:productId
 ========================================================= */
-router.get("/check/:productId", protectUser, checkEntitlement);
+router.get("/check/:productId", protect, checkEntitlement);
 
 export default router;

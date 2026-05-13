@@ -6,8 +6,7 @@ import {
   deleteEnrollment,
 } from "../controllers/enrollmentController.js";
 
-import { protectAdmin } from "../middleware/authMiddleware.js";
-import { adminOnly } from "../middleware/adminMiddleware.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -15,8 +14,8 @@ const router = express.Router();
 router.post("/", createEnrollment);
 
 /* ADMIN ONLY */
-router.get("/", protectAdmin, adminOnly, getEnrollments);
-router.put("/:id", protectAdmin, adminOnly, updateEnrollmentStatus);
-router.delete("/:id", protectAdmin, adminOnly, deleteEnrollment);
+router.get("/", protect, adminOnly, getEnrollments);
+router.put("/:id", protect, adminOnly, updateEnrollmentStatus);
+router.delete("/:id", protect, adminOnly, deleteEnrollment);
 
 export default router;

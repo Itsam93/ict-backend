@@ -4,7 +4,7 @@ import {
   markCompleted,
 } from "../controllers/resourceAnalyticsController.js";
 
-import { protectUser } from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -18,12 +18,12 @@ const router = express.Router();
  * - records time spent
  * - updates last viewed timestamp
  */
-router.post("/view", protectUser, trackView);
+router.post("/view", protect, trackView);
 
 /**
  * MARK RESOURCE AS COMPLETED
  * - used for learning progress tracking
  */
-router.post("/complete", protectUser, markCompleted);
+router.post("/complete", protect, markCompleted);
 
 export default router;
