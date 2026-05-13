@@ -25,7 +25,7 @@ const startServer = async () => {
     console.log("🗄️ Database connected successfully");
 
     const server = app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`✅ Server running on http://localhost:${PORT}`);
     });
 
     /* ================= GRACEFUL SHUTDOWN ================= */

@@ -10,11 +10,11 @@ import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-/* ================= ALL ROUTES PROTECTED ================= */
+/* ================= ADMIN USER MANAGEMENT ================= */
+
 router.use(protect);
 router.use(adminOnly);
 
-/* ================= USER MANAGEMENT ================= */
 router.get("/", getAllUsers);
 router.get("/:id", getUserById);
 router.put("/:id", updateUser);
