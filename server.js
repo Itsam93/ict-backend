@@ -19,7 +19,14 @@ if (!process.env.MONGO_URI) {
 /* ================= SERVER START ================= */
 const startServer = async () => {
   try {
+    console.log("🚀 Starting server...");
+
     await connectDB();
+    console.log("🗄️ Database connected successfully");
+
+    const server = app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
 
     /* ================= GRACEFUL SHUTDOWN ================= */
     process.on("SIGINT", () => {
