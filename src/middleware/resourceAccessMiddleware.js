@@ -1,22 +1,8 @@
 import Purchase from "../models/Purchase.js";
 import Transaction from "../models/Transaction.js";
 
-/**
- * =====================================================
- * RESOURCE ACCESS CONTROL MIDDLEWARE (PRODUCTION SAFE)
- * =====================================================
- *
- * Ensures only users who have successfully purchased
- * a resource can access it.
- *
- * Supports:
- * - Purchase model (legacy flow)
- * - Transaction model (new flow)
- *
- */
 export const canAccessResource = async (req, res, next) => {
   try {
-    /* ================= USER VALIDATION ================= */
     const userId = req.user?.id || req.user?._id;
     const userEmail = req.user?.email;
     const resourceId = req.params.id;
@@ -28,18 +14,12 @@ export const canAccessResource = async (req, res, next) => {
       });
     }
 
-    /* =====================================================
-       CHECK 1: PURCHASE MODEL (LEGACY SUPPORT)
-    ===================================================== */
     const purchase = await Purchase.findOne({
       user: userId,
       resource: resourceId,
       status: { $in: ["completed", "paid"] },
     });
 
-    /* =====================================================
-       CHECK 2: TRANSACTION MODEL (NEW SYSTEM FLOW)
-    ===================================================== */
     const transaction = await Transaction.findOne({
       email: userEmail,
       productType: "Resource",
@@ -47,9 +27,6 @@ export const canAccessResource = async (req, res, next) => {
       status: "paid",
     });
 
-    /* =====================================================
-       FINAL ACCESS DECISION
-    ===================================================== */
     const hasAccess = Boolean(purchase || transaction);
 
     if (!hasAccess) {
@@ -59,7 +36,6 @@ export const canAccessResource = async (req, res, next) => {
       });
     }
 
-    /* ================= PASS CONTROL ================= */
     return next();
 
   } catch (err) {

@@ -1,9 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-/* =========================================
-   PROTECT (UNIFIED)
-========================================= */
 export const protect = async (req, res, next) => {
   let token;
 
@@ -41,9 +38,6 @@ export const protect = async (req, res, next) => {
   }
 };
 
-/* =========================================
-   ADMIN ONLY (ROLE CHECK)
-========================================= */
 export const adminOnly = (req, res, next) => {
   if (req.user?.role !== "admin") {
     return res.status(403).json({

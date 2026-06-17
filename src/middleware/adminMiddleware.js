@@ -1,11 +1,6 @@
 import jwt from "jsonwebtoken";
 import Admin from "../models/Admin.js";
 
-/**
- * =========================
- * ADMIN AUTH (VERIFY TOKEN)
- * =========================
- */
 export const protectAdmin = async (req, res, next) => {
   let token;
 
@@ -32,11 +27,7 @@ export const protectAdmin = async (req, res, next) => {
   return res.status(401).json({ message: "Not authorized, no token" });
 };
 
-/**
- * =========================
- * ADMIN ROLE CHECK
- * =========================
- */
+
 export const adminOnly = (req, res, next) => {
   if (req.admin) {
     return next();

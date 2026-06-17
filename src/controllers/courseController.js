@@ -1,9 +1,6 @@
 import Course from "../models/Course.js";
 import Enrollment from "../models/Enrollment.js";
 
-/* =========================
-   CREATE COURSE (ADMIN)
-========================= */
 export const createCourse = async (req, res) => {
   try {
     const course = await Course.create(req.body);
@@ -13,9 +10,7 @@ export const createCourse = async (req, res) => {
   }
 };
 
-/* =========================
-   GET ALL COURSES (PUBLIC)
-========================= */
+
 export const getCourses = async (req, res) => {
   try {
     const courses = await Course.find();
@@ -25,9 +20,6 @@ export const getCourses = async (req, res) => {
   }
 };
 
-/* =========================
-   GET SINGLE COURSE
-========================= */
 export const getCourseById = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
@@ -42,9 +34,6 @@ export const getCourseById = async (req, res) => {
   }
 };
 
-/* =========================
-   UPDATE COURSE (ADMIN)
-========================= */
 export const updateCourse = async (req, res) => {
   try {
     const course = await Course.findByIdAndUpdate(
@@ -59,9 +48,6 @@ export const updateCourse = async (req, res) => {
   }
 };
 
-/* =========================
-   DELETE COURSE (ADMIN)
-========================= */
 export const deleteCourse = async (req, res) => {
   try {
     await Course.findByIdAndDelete(req.params.id);

@@ -19,9 +19,6 @@ import { sendEmail } from "../utils/emailService.js";
 import { paymentSuccessTemplate } from "../utils/emailTemplates.js";
 
 
-/* =========================================================
-   INIT TRANSACTION (CREATE PAYMENT LINK)
-========================================================= */
 export const initializeTransaction = async (req, res) => {
   try {
     const user = req.user;
@@ -107,14 +104,11 @@ export const initializeTransaction = async (req, res) => {
   }
 };
 
-/* =========================================================
-   VERIFY TRANSACTION (PAYSTACK CALLBACK)
-========================================================= */
+
 export const verifyTransaction = async (req, res) => {
   try {
     const { reference } = req.params;
 
-    /* ================= VALIDATION ================= */
     if (!reference) {
       return res.status(400).json({
         success: false,
@@ -122,7 +116,6 @@ export const verifyTransaction = async (req, res) => {
       });
     }
 
-    /* ================= FIND TRANSACTION FIRST ================= */
     const transaction = await Transaction.findOne({ reference });
 
     if (!transaction) {
@@ -132,9 +125,6 @@ export const verifyTransaction = async (req, res) => {
       });
     }
 
-    /* =========================================================
-       IDEMPOTENCY CHECK (STOP DOUBLE PROCESSING)
-    ========================================================= */
     if (transaction.status === "paid" && transaction.fulfilled) {
       return res.json({
         success: true,
@@ -147,7 +137,6 @@ export const verifyTransaction = async (req, res) => {
       });
     }
 
-    /* ================= VERIFY WITH PAYSTACK ================= */
     const paystackData = await verifyPaystackTransaction(reference);
 
     if (!paystackData || paystackData.status !== "success") {
@@ -160,20 +149,15 @@ export const verifyTransaction = async (req, res) => {
       });
     }
 
-    /* ================= MARK AS PAID ================= */
     transaction.status = "paid";
     transaction.paidAt = new Date();
     transaction.gatewayResponse = paystackData;
 
     await transaction.save();
 
-    /* =========================================================
-       FULFILLMENT PIPELINE (SOURCE OF TRUTH FOR ACCESS)
-    ========================================================= */
     const alreadyFulfilled = transaction.fulfilled === true;
 
     if (!alreadyFulfilled) {
-      /* ================= GRANT ACCESS (ENTITLEMENT LAYER) ================= */
       await grantEntitlement({
         userId: transaction.userId,
         productId: transaction.productId,
@@ -181,14 +165,12 @@ export const verifyTransaction = async (req, res) => {
         transactionRef: transaction.reference,
       });
 
-      /* ================= PROCESS LEGACY FULFILLMENT ================= */
       await processFulfillment(transaction);
 
       transaction.fulfilled = true;
       await transaction.save();
     }
 
-    /* ================= EMAIL NOTIFICATION (NON-BLOCKING) ================= */
     try {
       await sendEmail({
         to: transaction.email,
@@ -205,7 +187,6 @@ export const verifyTransaction = async (req, res) => {
       );
     }
 
-    /* ================= FINAL RESPONSE ================= */
     return res.json({
       success: true,
       message: "Payment verified and access granted",
@@ -228,9 +209,6 @@ export const verifyTransaction = async (req, res) => {
   }
 };
 
-/* =========================================================
-   GET USER TRANSACTIONS
-========================================================= */
 export const getMyTransactions = async (req, res) => {
   try {
     const user = req.user;
@@ -256,9 +234,6 @@ export const getMyTransactions = async (req, res) => {
   }
 };
 
-/* =========================================================
-   GET ALL TRANSACTIONS (ADMIN)
-========================================================= */
 export const getTransactions = async (req, res) => {
   try {
     const transactions = await Transaction.find()
@@ -277,9 +252,6 @@ export const getTransactions = async (req, res) => {
   }
 };
 
-/* =========================================================
-   DELETE TRANSACTION (ADMIN)
-========================================================= */
 export const deleteTransaction = async (req, res) => {
   try {
     const { id } = req.params;
@@ -326,7 +298,7 @@ export const getUserTransactions = async (req, res) => {
     }
 
     const transactions = await Transaction.find({
-      email: user.email, // fallback safe method
+      email: user.email, 
     }).sort({ createdAt: -1 });
 
     return res.json({

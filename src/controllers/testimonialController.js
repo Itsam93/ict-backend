@@ -1,8 +1,5 @@
 import Testimonial from "../models/Testimonial.js";
 
-/* =========================
-   CREATE TESTIMONIAL (ADMIN)
-========================= */
 export const createTestimonial = async (req, res) => {
   try {
     const testimonial = await Testimonial.create(req.body);
@@ -19,9 +16,6 @@ export const createTestimonial = async (req, res) => {
   }
 };
 
-/* =========================
-   GET ALL TESTIMONIALS (PUBLIC)
-========================= */
 export const getTestimonials = async (req, res) => {
   try {
     const testimonials = await Testimonial.find({
@@ -40,9 +34,6 @@ export const getTestimonials = async (req, res) => {
   }
 };
 
-/* =========================
-   UPDATE TESTIMONIAL (ADMIN)
-========================= */
 export const updateTestimonial = async (req, res) => {
   try {
     const testimonial = await Testimonial.findByIdAndUpdate(
@@ -63,9 +54,6 @@ export const updateTestimonial = async (req, res) => {
   }
 };
 
-/* =========================
-   DELETE TESTIMONIAL (ADMIN)
-========================= */
 export const deleteTestimonial = async (req, res) => {
   try {
     await Testimonial.findByIdAndDelete(req.params.id);

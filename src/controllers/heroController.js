@@ -1,8 +1,5 @@
 import HeroContent from "../models/HeroContent.js";
 
-/* =========================
-   CREATE HERO
-========================= */
 export const createHeroContent = async (req, res) => {
   try {
     const hero = await HeroContent.create(req.body);
@@ -19,9 +16,6 @@ export const createHeroContent = async (req, res) => {
   }
 };
 
-/* =========================
-   GET ALL HEROES
-========================= */
 export const getHeroContents = async (req, res) => {
   try {
     const heroes = await HeroContent.find().sort({ createdAt: -1 });
@@ -38,9 +32,6 @@ export const getHeroContents = async (req, res) => {
   }
 };
 
-/* =========================
-   GET SINGLE HERO
-========================= */
 export const getSingleHeroContent = async (req, res) => {
   try {
     const hero = await HeroContent.findById(req.params.id);
@@ -64,9 +55,6 @@ export const getSingleHeroContent = async (req, res) => {
   }
 };
 
-/* =========================
-   UPDATE HERO
-========================= */
 export const updateHeroContent = async (req, res) => {
   try {
     const hero = await HeroContent.findByIdAndUpdate(
@@ -95,9 +83,6 @@ export const updateHeroContent = async (req, res) => {
   }
 };
 
-/* =========================
-   DELETE HERO
-========================= */
 export const deleteHeroContent = async (req, res) => {
   try {
     const hero = await HeroContent.findById(req.params.id);
@@ -123,17 +108,12 @@ export const deleteHeroContent = async (req, res) => {
   }
 };
 
-/* =========================
-   SET ACTIVE HERO (OPTIONAL)
-========================= */
 export const setActiveHero = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Remove active from all
     await HeroContent.updateMany({}, { isActive: false });
 
-    // Set selected as active
     const hero = await HeroContent.findByIdAndUpdate(
       id,
       { isActive: true },

@@ -1,6 +1,5 @@
 import Transaction from "../models/Transaction.js";
 
-/* ================= TRACK RESOURCE VIEW ================= */
 export const trackView = async (req, res) => {
   try {
     const { resourceId, duration } = req.body;

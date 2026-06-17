@@ -195,7 +195,7 @@ export const getMyResources = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: resources, // Array returned cleanly to avoid frontend res.data.data.data mapping bugs
+      data: resources, 
     });
   } catch (err) {
     console.error("GET MY RESOURCES ERROR:", err);

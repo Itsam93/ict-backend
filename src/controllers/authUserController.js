@@ -100,9 +100,8 @@ export const registerUser = async (req, res) => {
       `,
     });
 
-    console.log("✅ EMAIL SENT:", emailResponse);
+    console.log("EMAIL SENT:", emailResponse);
 
-    /* ================= SUCCESS RESPONSE ================= */
     return res.status(201).json({
       success: true,
       message:
@@ -112,7 +111,6 @@ export const registerUser = async (req, res) => {
   } catch (error) {
     console.error("❌ REGISTER USER ERROR FULL:", error);
 
-    /* ================= CLEANUP FAILED USER ================= */
     if (user) {
       try {
         await User.findByIdAndDelete(user._id);
@@ -137,9 +135,6 @@ export const registerUser = async (req, res) => {
   }
 };
 
-/* =========================================
-   VERIFY EMAIL (ACTIVATION STEP)
-========================================= */
 export const verifyUserEmail = async (req, res) => {
   try {
     const { token } = req.params;
@@ -156,9 +151,8 @@ export const verifyUserEmail = async (req, res) => {
       });
     }
 
-    /* ================= ACTIVATE USER ================= */
     user.isEmailVerified = true;
-    user.isActive = true; // ✅ CRITICAL FIX: activate account properly
+    user.isActive = true; 
 
     user.emailVerificationToken = null;
     user.emailVerificationExpires = null;
@@ -180,9 +174,6 @@ export const verifyUserEmail = async (req, res) => {
   }
 };
 
-/* =========================================
-   RESEND VERIFICATION EMAIL
-========================================= */
 export const resendVerificationEmail = async (req, res) => {
   try {
     const { email } = req.body;
@@ -213,7 +204,6 @@ export const resendVerificationEmail = async (req, res) => {
       });
     }
 
-    /* ================= NEW TOKEN ================= */
     const token = crypto.randomBytes(32).toString("hex");
 
     user.emailVerificationToken = token;
@@ -222,10 +212,9 @@ export const resendVerificationEmail = async (req, res) => {
 
     await user.save();
 
-    /* ================= VERIFY LINK ================= */
+  
     const verifyLink = `${process.env.CLIENT_URL}/verify-email/${token}`;
 
-    /* ================= SEND EMAIL ================= */
     const emailResponse = await sendEmail({
       to: cleanEmail,
       subject: "Resend Email Verification",
@@ -278,9 +267,6 @@ export const resendVerificationEmail = async (req, res) => {
   }
 };
 
-/* =========================================
-   CHANGE PASSWORD
-========================================= */
 export const changePassword = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -330,14 +316,10 @@ export const changePassword = async (req, res) => {
   }
 };
 
-/* =========================================
-   LOGIN USER
-========================================= */
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    /* ================= VALIDATION ================= */
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -345,7 +327,6 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    /* ================= FIND USER ================= */
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
@@ -355,7 +336,6 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    /* ================= ROLE CHECK ================= */
     if (user.role !== "user") {
       return res.status(403).json({
         success: false,
@@ -363,7 +343,6 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    /* ================= EMAIL VERIFIED CHECK ================= */
     if (!user.isEmailVerified) {
       return res.status(403).json({
         success: false,
@@ -372,7 +351,6 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    /* ================= PASSWORD CHECK ================= */
     const isPasswordMatch = await bcrypt.compare(
       password,
       user.password
@@ -385,15 +363,12 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    /* ================= UPDATE LAST LOGIN ================= */
     user.lastLoginAt = new Date();
 
     await user.save();
 
-    /* ================= GENERATE TOKEN ================= */
     const token = generateToken(user._id);
 
-    /* ================= RESPONSE ================= */
     return res.status(200).json({
       success: true,
       message: "Login successful",
@@ -416,9 +391,6 @@ export const loginUser = async (req, res) => {
   }
 };
 
-/* =========================================
-   GET USER PROFILE
-========================================= */
 export const getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);

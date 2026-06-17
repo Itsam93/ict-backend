@@ -21,7 +21,6 @@ export const paystackWebhook = async (req, res) => {
     purchase.paidAt = new Date();
     await purchase.save();
 
-    /* ================= COURSE ENROLLMENT ================= */
     if (purchase.type === "course") {
       await Enrollment.updateOne(
         { email: purchase.email, course: purchase.course },
@@ -33,9 +32,6 @@ export const paystackWebhook = async (req, res) => {
         { upsert: true }
       );
     }
-
-    /* ================= RESOURCE ACCESS ================= */
-    // (handled via purchase check in download route)
 
     return res.sendStatus(200);
 

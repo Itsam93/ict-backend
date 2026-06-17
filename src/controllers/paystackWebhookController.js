@@ -4,9 +4,6 @@ import Purchase from "../models/Purchase.js";
 import Resource from "../models/Resource.js";
 import { verifyPayment } from "../utils/paystack.js";
 
-/**
- * PAYSTACK WEBHOOK
- */
 export const paystackWebhook = async (req, res) => {
   try {
     const secret = process.env.PAYSTACK_SECRET_KEY;
@@ -16,16 +13,12 @@ export const paystackWebhook = async (req, res) => {
       .update(JSON.stringify(req.body))
       .digest("hex");
 
-    // Verify signature
     if (hash !== req.headers["x-paystack-signature"]) {
       return res.status(401).send("Invalid signature");
     }
 
     const event = req.body;
 
-    /**
-     * successful payments
-     */
     if (event.event !== "charge.success") {
       return res.status(200).send("Event ignored");
     }
@@ -36,16 +29,12 @@ export const paystackWebhook = async (req, res) => {
     const email = data.customer.email;
     const amount = data.amount / 100;
 
-    // Prevent duplicate processing
     const existingTx = await Transaction.findOne({ reference });
 
     if (existingTx) {
       return res.status(200).send("Already processed");
     }
 
-    /**
-     * OPTIONAL SAFETY CHECK
-     */
     const verified = await verifyPayment(reference);
 
     if (verified.status !== "success") {
@@ -58,9 +47,6 @@ export const paystackWebhook = async (req, res) => {
       return res.status(400).send("Missing metadata");
     }
 
-    /**
-     * 1. Create Transaction
-     */
     const transaction = await Transaction.create({
       email,
       productType: "resource",
@@ -72,9 +58,7 @@ export const paystackWebhook = async (req, res) => {
       paidAt: new Date(),
     });
 
-    /**
-     * 2. Create Purchase (idempotent-safe)
-     */
+ 
     await Purchase.findOneAndUpdate(
       { reference },
       {
@@ -87,9 +71,6 @@ export const paystackWebhook = async (req, res) => {
       { upsert: true, new: true }
     );
 
-    /**
-     * 3. Optional: mark resource analytics
-     */
     await Resource.findByIdAndUpdate(resourceId, {
       $inc: { salesCount: 1 },
     });

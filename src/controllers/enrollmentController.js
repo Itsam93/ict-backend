@@ -2,9 +2,6 @@ import Enrollment from "../models/Enrollment.js";
 import { sendEmail } from "../utils/emailService.js";
 import { enrollmentTemplate } from "../utils/emailTemplates.js";
 
-/* =========================
-   CREATE ENROLLMENT (LEAD / FORM)
-========================= */
 export const createEnrollment = async (req, res) => {
   try {
     const { fullName, email, phone, course } = req.body;
@@ -18,7 +15,6 @@ export const createEnrollment = async (req, res) => {
       paymentStatus: "pending",
     });
 
-    // ✅ SEND EMAIL (correct place)
     await sendEmail({
       to: process.env.EMAIL_USER,
       subject: "New Enrollment",
@@ -38,9 +34,7 @@ export const createEnrollment = async (req, res) => {
   }
 };
 
-/* =========================
-   GET ALL ENROLLMENTS (ADMIN)
-========================= */
+
 export const getEnrollments = async (req, res) => {
   try {
     const enrollments = await Enrollment.find()
@@ -59,9 +53,6 @@ export const getEnrollments = async (req, res) => {
   }
 };
 
-/* =========================
-   UPDATE STATUS (ADMIN)
-========================= */
 export const updateEnrollmentStatus = async (req, res) => {
   try {
     const enrollment = await Enrollment.findById(req.params.id);
@@ -89,9 +80,6 @@ export const updateEnrollmentStatus = async (req, res) => {
   }
 };
 
-/* =========================
-   DELETE ENROLLMENT (ADMIN)
-========================= */
 export const deleteEnrollment = async (req, res) => {
   try {
     await Enrollment.findByIdAndDelete(req.params.id);

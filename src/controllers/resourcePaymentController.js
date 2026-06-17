@@ -2,12 +2,15 @@ import Purchase from "../models/Purchase.js";
 import Resource from "../models/Resource.js";
 import Transaction from "../models/Transaction.js";
 import { initializePayment, verifyPayment } from "../utils/paystack.js";
+import { sendBankTransferEmail } from "../utils/emailService.js";
 
 export const initializeResourcePayment = async (req, res) => {
   try {
     const email = req.user?.email; 
     const id = req.params.id || req.body?.resourceId || req.body?.id;
     const userId = req.user?._id;
+
+    const { paymentMethod = "card" } = req.body; 
 
     if (!email) {
       return res.status(400).json({ 
@@ -35,7 +38,6 @@ export const initializeResourcePayment = async (req, res) => {
     }
 
     const amount = Math.round(numericPrice); 
-
     const reference = `RES-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
     await Purchase.create({
@@ -45,6 +47,21 @@ export const initializeResourcePayment = async (req, res) => {
       reference,
       status: "pending",
     });
+
+    if (paymentMethod === "transfer") {
+      await sendBankTransferEmail({
+        userEmail: email,
+        amount,
+        reference,
+        resourceTitle: resource.title
+      });
+
+      return res.json({
+        success: true,
+        method: "transfer",
+        message: "Transfer invoice instructions successfully routed directly to your email inbox."
+      });
+    }
 
     const paymentData = await initializePayment({
       email,
@@ -60,6 +77,7 @@ export const initializeResourcePayment = async (req, res) => {
 
     return res.json({
       success: true,
+      method: "card",
       data: paymentData,
     });
   } catch (err) {

@@ -1,9 +1,6 @@
 import cloudinary from "../config/cloudinary.js";
 import fs from "fs";
 
-/* =====================================================
-   UPLOAD FILE TO CLOUDINARY
-===================================================== */
 export const uploadResourceFile = async (req, res) => {
   try {
     if (!req.file) {
@@ -38,9 +35,7 @@ export const uploadResourceFile = async (req, res) => {
   }
 };
 
-/* =====================================================
-   DELETE FILE FROM CLOUDINARY
-===================================================== */
+
 export const deleteUploadedFile = async (req, res) => {
   try {
     const { publicId } = req.params;
