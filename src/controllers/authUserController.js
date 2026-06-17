@@ -3,17 +3,86 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import generateToken from "../utils/generateToken.js";
 import { sendEmail } from "../utils/emailService.js";
+import { OAuth2Client } from "google-auth-library"; 
 
-/* =========================================
-   REGISTER USER (SIGNUP + EMAIL VERIFICATION)
-========================================= */
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+export const googleAuth = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: "Google signature token is missing.",
+      });
+    }
+
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, sub: googleId } = payload;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        fullName: name,
+        email,
+        isEmailVerified: true, 
+        isActive: true,
+        role: "user", 
+      });
+    } else {
+      if (!user.isActive) {
+        return res.status(403).json({
+          success: false,
+          message: "Your account is currently disabled.",
+        });
+      }
+
+      if (!user.isEmailVerified) {
+        user.isEmailVerified = true;
+        user.isActive = true;
+        await user.save();
+      }
+    }
+
+    user.lastLoginAt = new Date();
+    await user.save();
+
+    const appToken = generateToken(user._id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Successfully authenticated with Google",
+      token: appToken,
+      data: {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        token: appToken,
+      },
+    });
+  } catch (error) {
+    console.error("❌ GOOGLE AUTH BACKEND ERROR:", error);
+    return res.status(401).json({
+      success: false,
+      message: "Google verification failed. Token is invalid or expired.",
+    });
+  }
+};
+
 export const registerUser = async (req, res) => {
   let user;
 
   try {
     const { fullName, email, password } = req.body;
 
-    /* ================= VALIDATION ================= */
     if (!fullName || !email || !password) {
       return res.status(400).json({
         success: false,
@@ -21,7 +90,6 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    /* ================= CHECK EXISTING USER ================= */
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -31,18 +99,14 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    /* ================= HASH PASSWORD ================= */
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    /* ================= GENERATE VERIFICATION TOKEN ================= */
     const verificationToken = crypto.randomBytes(32).toString("hex");
 
-    /* ================= CREATE VERIFY LINK ================= */
     const verifyLink = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
 
     console.log("📨 VERIFY LINK:", verifyLink);
 
-    /* ================= CREATE USER ================= */
     user = await User.create({
       fullName,
       email,
@@ -53,13 +117,11 @@ export const registerUser = async (req, res) => {
 
       isEmailVerified: false,
 
-      // ✅ CRITICAL FIX: user is NOT active until verified
       isActive: false,
     });
 
     console.log("✅ USER CREATED:", user.email);
 
-    /* ================= SEND VERIFICATION EMAIL ================= */
     const emailResponse = await sendEmail({
       to: email,
       subject: "Verify Your Account",
@@ -212,7 +274,6 @@ export const resendVerificationEmail = async (req, res) => {
 
     await user.save();
 
-  
     const verifyLink = `${process.env.CLIENT_URL}/verify-email/${token}`;
 
     const emailResponse = await sendEmail({
