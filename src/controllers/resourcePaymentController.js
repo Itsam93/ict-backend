@@ -5,12 +5,15 @@ import { initializePayment, verifyPayment } from "../utils/paystack.js";
 
 export const initializeResourcePayment = async (req, res) => {
   try {
-    const { email } = req.body;
-    const id = req.params.id || req.body.resourceId || req.body.id;
+    const email = req.user?.email; 
+    const id = req.params.id || req.body?.resourceId || req.body?.id;
     const userId = req.user?._id;
 
     if (!email) {
-      return res.status(400).json({ success: false, message: "Email is required" });
+      return res.status(400).json({ 
+        success: false, 
+        message: "User email context missing. Please log in again." 
+      });
     }
 
     const resource = await Resource.findById(id);
