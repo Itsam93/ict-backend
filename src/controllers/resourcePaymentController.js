@@ -1,43 +1,40 @@
-import axios from "axios";
 import Purchase from "../models/Purchase.js";
 import Resource from "../models/Resource.js";
 import Transaction from "../models/Transaction.js";
+import { initializePayment, verifyPayment } from "../utils/paystack.js";
 
-
-/* ================= INIT RESOURCE PAYMENT ================= */
 export const initializeResourcePayment = async (req, res) => {
   try {
     const { email } = req.body;
-    const { id } = req.params;
+    const id = req.params.id || req.body.resourceId || req.body.id;
+    const userId = req.user?._id;
 
     if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: "Email is required",
-      });
+      return res.status(400).json({ success: false, message: "Email is required" });
     }
 
     const resource = await Resource.findById(id);
-
     if (!resource) {
-      return res.status(404).json({
-        success: false,
-        message: "Resource not found",
-      });
+      return res.status(404).json({ success: false, message: "Resource item not found in data collection" });
     }
 
-    if (!resource.price || isNaN(resource.price)) {
+    let cleanPrice = typeof resource.price === "string" 
+      ? resource.price.replace(/[^0-9.]/g, "") 
+      : resource.price;
+
+    const numericPrice = parseFloat(cleanPrice);
+
+    if (!numericPrice || isNaN(numericPrice) || numericPrice <= 0) {
       return res.status(400).json({
         success: false,
-        message: "Invalid resource price",
+        message: `Invalid price configuration for this resource. Resolved value: ${resource.price}`,
       });
     }
 
-    const amount = Math.round(Number(resource.price));
+    const amount = Math.round(numericPrice); 
 
     const reference = `RES-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-    // Create pending purchase first
     await Purchase.create({
       email,
       resource: id,
@@ -46,87 +43,76 @@ export const initializeResourcePayment = async (req, res) => {
       status: "pending",
     });
 
-    const response = await axios.post(
-      "https://api.paystack.co/transaction/initialize",
-      {
-        email,
-        amount: amount * 100, // kobo
-        reference,
-        callback_url: `${process.env.CLIENT_URL}/payment-success`,
+    const paymentData = await initializePayment({
+      email,
+      amount, 
+      metadata: {
+        userId,
+        productId: resource._id,
+        productType: "resource",
       },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    });
+
+    paymentData.reference = reference;
 
     return res.json({
       success: true,
-      data: response.data.data,
+      data: paymentData,
     });
-
   } catch (err) {
-    console.error(
-      "RESOURCE PAY ERROR:",
-      err.response?.data || err.message
-    );
-
+    console.error("RESOURCE PAY INIT ERROR:", err.message);
     return res.status(500).json({
       success: false,
-      message:
-        err.response?.data?.message ||
-        "Payment initialization failed",
+      message: err.message || "Payment initialization failed",
     });
   }
 };
 
-/* ================= VERIFY RESOURCE PAYMENT ================= */
 export const verifyResourcePayment = async (req, res) => {
   try {
     const { reference } = req.params;
 
-    const response = await axios.get(
-      `https://api.paystack.co/transaction/verify/${reference}`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-        },
-      }
-    );
+    const paystackData = await verifyPayment(reference);
+    const isSuccess = paystackData.status === "success";
 
     const purchase = await Purchase.findOne({ reference });
-
     if (!purchase) {
       return res.status(404).json({
         success: false,
-        message: "Purchase not found",
+        message: "Purchase logging profile not found",
       });
     }
 
-    const paystackData = response.data.data;
-    const isSuccess = paystackData.status === "success";
-
     purchase.status = isSuccess ? "paid" : "failed";
     await purchase.save();
+
+    if (isSuccess) {
+      const userId = paystackData.metadata?.userId || req.user?._id;
+      const productId = paystackData.metadata?.productId || purchase.resource;
+
+      await Transaction.findOneAndUpdate(
+        { reference: reference },
+        {
+          userId,
+          productId,
+          productType: "resource",
+          amount: purchase.amount,
+          reference: reference,
+          status: "paid",
+        },
+        { upsert: true, new: true }
+      );
+    }
 
     return res.json({
       success: true,
       data: purchase,
     });
-
   } catch (err) {
-    console.error("VERIFY ERROR:", err.response?.data || err.message);
-
+    console.error("RESOURCE PAY VERIFY ERROR:", err.message);
     return res.status(500).json({
       success: false,
-      message:
-        err.response?.data?.message ||
-        "Payment verification failed",
+      message: err.message || "Payment verification failed",
     });
   }
 };
-
-
-

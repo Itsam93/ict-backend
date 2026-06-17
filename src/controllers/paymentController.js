@@ -6,9 +6,7 @@ import { paymentSuccessTemplate } from "../utils/emailTemplates.js";
 
 
 
-/* =========================
-   GET ALL PAYMENTS (ADMIN)
-========================= */
+/* ADMIN */
 export const getPayments = async (req, res) => {
   try {
     const payments = await Payment.find().sort({ createdAt: -1 });

@@ -1,8 +1,5 @@
 import Entitlement from "../models/Entitlement.js";
 
-/* =========================================================
-   GET MY ENTITLEMENTS (USER DASHBOARD SOURCE OF TRUTH)
-========================================================= */
 export const getMyEntitlements = async (req, res) => {
   try {
     const userId = req.user?._id;
@@ -32,15 +29,11 @@ export const getMyEntitlements = async (req, res) => {
   }
 };
 
-/* =========================================================
-   CHECK SINGLE PRODUCT ACCESS (GENERIC + REUSABLE)
-========================================================= */
 export const checkEntitlement = async (req, res) => {
   try {
     const userId = req.user?._id;
     const { productId } = req.params;
     const { productType } = req.query; 
-    // allows: Resource | Course | future types
 
     if (!userId) {
       return res.status(401).json({

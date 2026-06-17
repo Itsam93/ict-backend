@@ -13,20 +13,10 @@ import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-/* =========================
-   PUBLIC PAYMENT ROUTES
-========================= */
-
-// Initialize payment 
 router.post("/init", protect, initializeTransaction);
 
-// Verify payment (Paystack callback check)
 router.get("/verify/:reference", verifyTransaction);
 
-
-/* =========================
-   USER PAYMENT ROUTES
-========================= */
 
 router.get(
   "/my",
@@ -35,9 +25,6 @@ router.get(
 );
 
 
-/* =========================
-   ADMIN ROUTES
-========================= */
 router.get(
   "/",
   protect,

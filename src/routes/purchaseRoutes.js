@@ -9,10 +9,8 @@ import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-/* ================= PUBLIC ================= */
 router.post("/my", getMyPurchases); 
 
-/* ================= ADMIN ================= */
 router.get("/", protect, adminOnly, getAllPurchases);
 router.delete("/:id", protect, adminOnly, deletePurchase);
 

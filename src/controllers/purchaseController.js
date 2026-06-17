@@ -1,11 +1,5 @@
 import Purchase from "../models/Purchase.js";
 
-/**
- * =========================
- * PUBLIC: GET PURCHASES BY EMAIL
- * GET /api/purchases/my?email=example@gmail.com
- * =========================
- */
 export const getMyPurchases = async (req, res) => {
   try {
     const { email } = req.query;
@@ -34,12 +28,6 @@ export const getMyPurchases = async (req, res) => {
   }
 };
 
-/**
- * =========================
- * ADMIN: GET ALL PURCHASES
- * GET /api/purchases
- * =========================
- */
 export const getAllPurchases = async (req, res) => {
   try {
     const purchases = await Purchase.find()
@@ -59,11 +47,6 @@ export const getAllPurchases = async (req, res) => {
   }
 };
 
-/**
- * =========================
- * CREATE PURCHASE (AFTER PAYMENT VERIFY)
- * =========================
- */
 export const createPurchase = async (req, res) => {
   try {
     const { email, resource, amount, reference } = req.body;
@@ -96,11 +79,6 @@ export const createPurchase = async (req, res) => {
   }
 };
 
-/**
- * =========================
- * DELETE PURCHASE (ADMIN ONLY)
- * =========================
- */
 export const deletePurchase = async (req, res) => {
   try {
     const purchase = await Purchase.findById(req.params.id);

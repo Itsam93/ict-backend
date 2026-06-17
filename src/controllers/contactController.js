@@ -6,16 +6,12 @@ import {
   adminReplyTemplate,
 } from "../utils/emailTemplates.js";
 
-/* ======================================================
-   SEND MESSAGE (PUBLIC USER)
-====================================================== */
 export const sendMessage = async (req, res) => {
   try {
     const { name, email, message, subject, phone, course } = req.body;
 
     console.log("📩 NEW CONTACT:", req.body);
 
-    /* ================= SAVE MESSAGE ================= */
     const contact = await Contact.create({
       name,
       email,
@@ -29,7 +25,6 @@ export const sendMessage = async (req, res) => {
 
     console.log("💾 MESSAGE SAVED");
 
-    /* ================= NOTIFY ADMIN ================= */
     try {
       await sendEmail({
         to: process.env.ADMIN_EMAIL,
@@ -48,7 +43,6 @@ export const sendMessage = async (req, res) => {
       console.error("❌ ADMIN EMAIL FAILED:", err.message);
     }
 
-    /* ================= AUTO REPLY TO USER ================= */
     try {
       await sendEmail({
         to: email,
@@ -61,7 +55,6 @@ export const sendMessage = async (req, res) => {
       console.error("❌ AUTO REPLY FAILED:", err.message);
     }
 
-    /* ================= RESPONSE ================= */
     return res.status(201).json({
       success: true,
       message: "Message sent successfully",
@@ -77,9 +70,6 @@ export const sendMessage = async (req, res) => {
   }
 };
 
-/* ======================================================
-   GET ALL MESSAGES (ADMIN DASHBOARD)
-====================================================== */
 export const getMessages = async (req, res) => {
   try {
     const messages = await Contact.find().sort({ createdAt: -1 });
@@ -98,9 +88,6 @@ export const getMessages = async (req, res) => {
   }
 };
 
-/* ======================================================
-   MARK MESSAGE AS READ
-====================================================== */
 export const markAsRead = async (req, res) => {
   try {
     const message = await Contact.findById(req.params.id);
@@ -129,9 +116,6 @@ export const markAsRead = async (req, res) => {
   }
 };
 
-/* ======================================================
-   DELETE MESSAGE (ADMIN)
-====================================================== */
 export const deleteMessage = async (req, res) => {
   try {
     const deleted = await Contact.findByIdAndDelete(req.params.id);
@@ -157,9 +141,6 @@ export const deleteMessage = async (req, res) => {
   }
 };
 
-/* ======================================================
-   ADMIN MANUAL REPLY (DASHBOARD FEATURE)
-====================================================== */
 export const replyToMessage = async (req, res) => {
   try {
     const { id, replyMessage } = req.body;
@@ -173,7 +154,6 @@ export const replyToMessage = async (req, res) => {
       });
     }
 
-    /* OPTIONAL: prevent duplicate replies */
     if (message.isReplied) {
       return res.status(400).json({
         success: false,
@@ -181,7 +161,6 @@ export const replyToMessage = async (req, res) => {
       });
     }
 
-    /* ================= SEND REPLY EMAIL ================= */
     await sendEmail({
       to: message.email,
       subject: "Response from Zerototechafrica",
@@ -192,7 +171,6 @@ export const replyToMessage = async (req, res) => {
       }),
     });
 
-    /* ================= UPDATE DB ================= */
     message.isReplied = true;
     message.replyMessage = replyMessage;
     message.repliedAt = new Date();
@@ -209,6 +187,66 @@ export const replyToMessage = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+export const handleNewsletterSubscribe = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email address is required to subscribe.",
+      });
+    }
+
+    const duplicateSubscriber = await Contact.findOne({
+      email,
+      subject: "Newsletter Subscription",
+    });
+
+    if (duplicateSubscriber) {
+      return res.status(400).json({
+        success: false,
+        message: "This email address is already subscribed to our newsletter channel.",
+      });
+    }
+
+    console.log(`🗞️ NEW NEWSLETTER SUBSCRIPTION REQUEST: ${email}`);
+
+    const subscriberLog = await Contact.create({
+      name: "Newsletter Subscriber",
+      email: email,
+      subject: "Newsletter Subscription",
+      message: "User opted-in via the website footer newsletter subscription form block.",
+      isRead: false,
+      isReplied: true, 
+    });
+
+    try {
+      await sendEmail({
+        to: email,
+        subject: "Welcome to Zero-to-tech-africa Newsletter!",
+        html: autoReplyTemplate("Subscriber"), 
+      });
+      console.log("📩 NEWSLETTER WELCOME CONFIRMATION DESPATCHED");
+    } catch (mailErr) {
+      console.error("❌ NEWSLETTER WELCOME EMAIL DISPATCH FAILED:", mailErr.message);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Subscription processed successfully.",
+      data: subscriberLog,
+    });
+
+  } catch (error) {
+    console.error("❌ NEWSLETTER SUBSCRIBE CONTROLLER ERROR:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error processing subscription.",
     });
   }
 };

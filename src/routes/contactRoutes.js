@@ -5,20 +5,19 @@ import {
   markAsRead,
   deleteMessage,
   replyToMessage,
+  handleNewsletterSubscribe, 
 } from "../controllers/contactController.js";
 
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-/* =========================
-   PUBLIC ROUTE
-========================= */
+
 router.post("/", sendMessage);
 
-/* =========================
-   ADMIN ROUTES
-========================= */
+router.post("/subscribe", handleNewsletterSubscribe); 
+
+
 router.get("/", protect, adminOnly, getMessages);
 
 router.put("/:id/read", protect, adminOnly, markAsRead);
