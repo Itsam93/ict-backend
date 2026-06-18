@@ -19,8 +19,16 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
+      required: function () {
+        return !this.googleId;
+      },
       select: false,
+    },
+
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, 
     },
 
     role: {
@@ -29,7 +37,6 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
 
-    /* ================= ACCOUNT STATUS ================= */
     isEmailVerified: {
       type: Boolean,
       default: false,
@@ -40,7 +47,6 @@ const userSchema = new mongoose.Schema(
       default: true,
     },
 
-    /* ================= VERIFICATION ================= */
     emailVerificationToken: {
       type: String,
       default: null,
@@ -53,7 +59,6 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
-    /* ================= PASSWORD RESET ================= */
     passwordResetToken: {
       type: String,
       default: null,
@@ -66,7 +71,6 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
-    /* ================= META ================= */
     lastLoginAt: {
       type: Date,
       default: null,
@@ -77,20 +81,15 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-/* =====================================================
-   PASSWORD HASHING (FIXED - NO next() BUG)
-===================================================== */
 userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
+  if (!this.password || !this.isModified("password")) return;
 
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-/* =====================================================
-   PASSWORD MATCH METHOD
-===================================================== */
 userSchema.methods.matchPassword = async function (enteredPassword) {
+  if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
