@@ -32,6 +32,7 @@ export const googleAuth = async (req, res) => {
       user = await User.create({
         fullName: name,
         email,
+        googleId, 
         isEmailVerified: true, 
         isActive: true,
         role: "user", 
@@ -44,9 +45,17 @@ export const googleAuth = async (req, res) => {
         });
       }
 
+      let updated = false;
+      if (!user.googleId) {
+        user.googleId = googleId;
+        updated = true;
+      }
       if (!user.isEmailVerified) {
         user.isEmailVerified = true;
         user.isActive = true;
+        updated = true;
+      }
+      if (updated) {
         await user.save();
       }
     }
