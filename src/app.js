@@ -26,21 +26,16 @@ import { limiter } from "./middleware/rateLimit.js";
 
 const app = express();
 
-/* ================= PATH CONFIG ================= */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/* ================= ENV CONFIG ================= */
 const CLIENT_URL =
   process.env.CLIENT_URL ||
   process.env.FRONTEND_URL ||
   "http://localhost:5173";
 
-/* ================= SECURITY / CORS ================= */
 const corsOptions = {
   origin: function (origin, callback) {
-    // allow requests with no origin
-    // (mobile apps, postman, server-to-server)
     if (!origin) {
       return callback(null, true);
     }
@@ -49,7 +44,7 @@ const corsOptions = {
       CLIENT_URL,
       "http://localhost:5173",
       "http://127.0.0.1:5173",
-       "https://zero-to-tech.vercel.app",
+      "https://zero-to-tech.vercel.app",
     ];
 
     if (allowedOrigins.includes(origin)) {
@@ -76,26 +71,25 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
-/* ================= MIDDLEWARE ================= */
 app.use(cors(corsOptions));
 
-/* Handle preflight requests */
 app.options(/.*/, cors(corsOptions));
 
-/* Body parsers */
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  next();
+});
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-/* Rate limiter */
 app.use(limiter);
 
-/* ================= STATIC FILES ================= */
 app.use(
   "/uploads",
   express.static(path.join(__dirname, "uploads"))
 );
 
-/* ================= HEALTH CHECK ================= */
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
@@ -104,8 +98,8 @@ app.get("/", (req, res) => {
   });
 });
 
-/* ================= API ROUTES ================= */
 app.use("/api/auth", authRoutes);
+app.use("/api/auth", authUserRoutes); 
 app.use("/api/users", authUserRoutes);
 
 app.use("/api/courses", courseRoutes);
@@ -140,10 +134,8 @@ app.use(
 
 app.use("/api/paystack", paystackRoutes);
 
-/* ================= 404 HANDLER ================= */
 app.use(notFound);
 
-/* ================= GLOBAL ERROR HANDLER ================= */
 app.use(errorHandler);
 
 export default app;
