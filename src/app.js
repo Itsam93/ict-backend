@@ -34,30 +34,34 @@ const CLIENT_URL =
   process.env.FRONTEND_URL ||
   "http://localhost:5173";
 
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  next();
+});
+
+const allowedOrigins = [
+  CLIENT_URL,
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "https://zero-to-tech.vercel.app",
+];
+
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin) {
-      return callback(null, true);
-    }
-
-    const allowedOrigins = [
-      CLIENT_URL,
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-      "https://zero-to-tech.vercel.app",
-    ];
+    if (!origin) return callback(null, true);
 
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error(`CORS blocked for origin: ${origin}`));
     }
-  }, 
+  },
 
   credentials: true,
-
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-
   allowedHeaders: [
     "Origin",
     "X-Requested-With",
@@ -65,30 +69,24 @@ const corsOptions = {
     "Accept",
     "Authorization",
   ],
-
   exposedHeaders: ["Content-Length"],
-
   optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
-
 app.options(/.*/, cors(corsOptions));
-
-app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-  next();
-});
-
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.use(limiter);
 
 app.use(
-  "/uploads",
-  express.static(path.join(__dirname, "uploads"))
+  "/api/paystack/webhook",
+  express.raw({ type: "application/json" })
 );
+
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -99,13 +97,11 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
-app.use("/api/auth", authUserRoutes); 
+app.use("/api/auth", authUserRoutes);
 app.use("/api/users", authUserRoutes);
 
 app.use("/api/courses", courseRoutes);
-
 app.use("/api/contact", contactRoutes);
-
 app.use("/api/enrollments", enrollmentRoutes);
 
 app.use("/api/cms/hero", heroRoutes);
@@ -114,28 +110,21 @@ app.use("/api/cms/cta", ctaRoutes);
 app.use("/api/admin/users", adminUserRoutes);
 
 app.use("/api/transactions", transactionRoutes);
-
 app.use("/api/entitlements", entitlementRoutes);
 
 app.use("/api/resources", resourceRoutes);
+app.use("/api/resources/analytics", resourceAnalyticsRoutes);
 
 app.use("/api/testimonials", testimonialRoutes);
 
 app.use("/api/payments", paymentRoutes);
+app.use("/api/paystack", paystackRoutes);
 
 app.use("/api/purchases", purchaseRoutes);
 
 app.use("/api/uploads", uploadRoutes);
 
-app.use(
-  "/api/resources/analytics",
-  resourceAnalyticsRoutes
-);
-
-app.use("/api/paystack", paystackRoutes);
-
 app.use(notFound);
-
 app.use(errorHandler);
 
 export default app;
